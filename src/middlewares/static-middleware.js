@@ -7,7 +7,7 @@ const FileHelper = require("../helpers/FileHelper");
 const prettyExtensions = ["html", "htm"];
 
 module.exports =
-  (tmpPath, dir) =>
+  (tmpPath, dir, { ignore = [] } = {}) =>
   async ({ request, response, next }) => {
     const url =
       tmpPath !== "/"
@@ -21,6 +21,14 @@ module.exports =
     let ended = false;
 
     const serve = async (file) => {
+      const shouldBeIgnored = ignore.some(
+        (tmpIgnore) => path.resolve(dir, tmpIgnore) === file
+      );
+
+      if (shouldBeIgnored) {
+        return;
+      }
+
       const parts = path.parse(file);
 
       const mime = mimeTypes.lookup(parts.ext);
@@ -150,7 +158,11 @@ module.exports =
 
       // /hello.html -> /hello.html
 
-      if ((await FileHelper.exists(file)) && (await FileHelper.isFile(file))) {
+      if (
+        (await FileHelper.exists(file)) &&
+        (await FileHelper.isFile(file)) &&
+        !request.url.endsWith("/")
+      ) {
         await serve(file);
       }
     }

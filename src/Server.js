@@ -75,10 +75,10 @@ class Server {
     this.middlewares.push(middleware);
   }
 
-  static(path, dir) {
+  static(path, dir, options = {}) {
     const tmpPath = `${path !== "/" ? path : ""}/:empty*:`;
 
-    const middleware = staticMiddleware(path, dir);
+    const middleware = staticMiddleware(path, dir, options);
 
     this.use(tmpPath, middleware);
   }
