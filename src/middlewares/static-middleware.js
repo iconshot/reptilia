@@ -7,7 +7,7 @@ const FileHelper = require("../helpers/FileHelper");
 const prettyExtensions = ["html", "htm"];
 
 module.exports =
-  (tmpPath, dir, { ignore = [] } = {}) =>
+  (tmpPath, dir, { ignore = [], maxAge = 0 } = {}) =>
   async ({ request, response, next }) => {
     const url =
       tmpPath !== "/"
@@ -33,9 +33,17 @@ module.exports =
 
       const mime = mimeTypes.lookup(parts.ext);
 
+      const mTime = await FileHelper.getModifiedTime(file);
+
+      const mDate = new Date(mTime);
+
+      const modified = mDate.toUTCString();
+
       const content = await FileHelper.read(file);
 
       response.setHeader("Content-Type", mime);
+      response.setHeader("Last-Modified", modified);
+      response.setHeader("Cache-Control", `public, max-age=${maxAge}`);
 
       response.end(content);
 

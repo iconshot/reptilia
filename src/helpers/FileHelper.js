@@ -26,6 +26,12 @@ class FileHelper {
 
     return stat.isDirectory();
   }
+
+  static async getModifiedTime(file) {
+    const stat = await fsp.stat(file);
+
+    return stat.mtime;
+  }
 }
 
 module.exports = FileHelper;
