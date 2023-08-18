@@ -11,10 +11,6 @@ class FileHelper {
     }
   }
 
-  static async read(file) {
-    return await fsp.readFile(file);
-  }
-
   static async isFile(file) {
     const stat = await fsp.stat(file);
 
@@ -25,12 +21,6 @@ class FileHelper {
     const stat = await fsp.stat(file);
 
     return stat.isDirectory();
-  }
-
-  static async getModifiedTime(file) {
-    const stat = await fsp.stat(file);
-
-    return stat.mtime;
   }
 }
 

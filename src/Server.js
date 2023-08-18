@@ -9,6 +9,12 @@ const Middleware = require("./Middleware");
 class Server {
   constructor() {
     this.middlewares = [];
+
+    this.server = http.createServer(requestHandler(this));
+  }
+
+  getServer() {
+    return this.server;
   }
 
   getMiddlewares() {
@@ -85,11 +91,9 @@ class Server {
 
   start(port) {
     return new Promise((resolve, reject) => {
-      const server = http.createServer(requestHandler(this));
+      this.server.on("error", (error) => reject(error));
 
-      server.on("error", (error) => reject(error));
-
-      server.listen(port, resolve);
+      this.server.listen(port, resolve);
     });
   }
 }

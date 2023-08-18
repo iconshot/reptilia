@@ -1,13 +1,13 @@
 const path = require("path");
 
-const mimeTypes = require("mime-types");
+const send = require("send");
 
 const FileHelper = require("../helpers/FileHelper");
 
 const prettyExtensions = ["html", "htm"];
 
 module.exports =
-  (tmpPath, dir, { ignore = [], maxAge = 0 } = {}) =>
+  (tmpPath, dir, { ignore = [] } = {}) =>
   async ({ request, response, next }) => {
     const url =
       tmpPath !== "/"
@@ -16,7 +16,9 @@ module.exports =
           : "/"
         : request.url;
 
-    const pathname = url.split("#")[0].split("?")[0].replace(/\/+$/, "");
+    const tmpUrl = new URL(url, "http://localhost");
+
+    const { pathname } = tmpUrl;
 
     let ended = false;
 
@@ -29,23 +31,7 @@ module.exports =
         return;
       }
 
-      const parts = path.parse(file);
-
-      const mime = mimeTypes.lookup(parts.ext);
-
-      const mTime = await FileHelper.getModifiedTime(file);
-
-      const mDate = new Date(mTime);
-
-      const modified = mDate.toUTCString();
-
-      const content = await FileHelper.read(file);
-
-      response.setHeader("Content-Type", mime);
-      response.setHeader("Last-Modified", modified);
-      response.setHeader("Cache-Control", `public, max-age=${maxAge}`);
-
-      response.end(content);
+      send(request, file).pipe(response);
 
       ended = true;
     };
