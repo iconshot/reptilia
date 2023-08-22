@@ -21,64 +21,50 @@ class Server {
     return this.middlewares;
   }
 
-  use(...args) {
-    const middleware = new Middleware(...args);
+  add(method, ...args) {
+    const middleware = new Middleware(method, ...args);
 
     this.middlewares.push(middleware);
+  }
+
+  use(...args) {
+    this.add(null, ...args);
   }
 
   get(...args) {
-    const middleware = new Middleware("get", ...args);
-
-    this.middlewares.push(middleware);
+    this.add("get", ...args);
   }
 
   post(...args) {
-    const middleware = new Middleware("post", ...args);
-
-    this.middlewares.push(middleware);
+    this.add("post", ...args);
   }
 
   head(...args) {
-    const middleware = new Middleware("head", ...args);
-
-    this.middlewares.push(middleware);
+    this.add("head", ...args);
   }
 
   put(...args) {
-    const middleware = new Middleware("put", ...args);
-
-    this.middlewares.push(middleware);
+    this.add("put", ...args);
   }
 
   delete(...args) {
-    const middleware = new Middleware("delete", ...args);
-
-    this.middlewares.push(middleware);
+    this.add("delete", ...args);
   }
 
   connect(...args) {
-    const middleware = new Middleware("connect", ...args);
-
-    this.middlewares.push(middleware);
+    this.add("connect", ...args);
   }
 
   options(...args) {
-    const middleware = new Middleware("options", ...args);
-
-    this.middlewares.push(middleware);
+    this.add("options", ...args);
   }
 
   trace(...args) {
-    const middleware = new Middleware("trace", ...args);
-
-    this.middlewares.push(middleware);
+    this.add("trace", ...args);
   }
 
   patch(...args) {
-    const middleware = new Middleware("patch", ...args);
-
-    this.middlewares.push(middleware);
+    this.add("patch", ...args);
   }
 
   static(path, dir, options = {}) {

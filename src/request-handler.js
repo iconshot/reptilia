@@ -1,6 +1,6 @@
 const crossroads = require("crossroads");
 
-const CookieMap = require("./CookieMap/CookieMap");
+const Controller = require("./Controller/Controller");
 
 module.exports = (server) => (request, response) => {
   const middlewares = server.getMiddlewares();
@@ -9,11 +9,19 @@ module.exports = (server) => (request, response) => {
     return;
   }
 
+  const controller = new Controller(request, response);
+
   const { headers } = request;
 
-  const cookies = new CookieMap(request, response);
+  const cookies = controller.parseCookies();
 
-  const { searchParams: query } = new URL(request.url, "http://localhost");
+  const { searchParams } = new URL(request.url, "http://localhost");
+
+  const query = {};
+
+  searchParams.forEach((value, key) => {
+    query[key] = value;
+  });
 
   let index = 0;
 
@@ -83,6 +91,7 @@ module.exports = (server) => (request, response) => {
     listener({
       request,
       response,
+      controller,
       context,
       params,
       headers,
