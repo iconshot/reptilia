@@ -4,7 +4,7 @@ const File = require("../File");
 
 class BodyHelper {
   static parseBody(request) {
-    let body = {};
+    let body = null;
 
     if (request.method === "GET" || request.method === "HEAD") {
       return body;
@@ -12,7 +12,7 @@ class BodyHelper {
 
     const { "content-length": contentLength = null } = request.headers;
 
-    if (contentLength === null || contentLength === "0") {
+    if (contentLength === null) {
       return body;
     }
 
@@ -22,6 +22,8 @@ class BodyHelper {
 
     if (this.isMultipart(mime) || this.isUrlEncoded(mime)) {
       return new Promise((resolve) => {
+        body = {};
+
         const bb = busboy({ headers: request.headers });
 
         bb.on("file", (key, file, info) => {

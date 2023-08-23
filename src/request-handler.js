@@ -19,7 +19,7 @@ module.exports = (server) => async (request, response) => {
 
   const cookies = controller.parseCookies();
 
-  const { searchParams } = new URL(request.url, "http://localhost");
+  const { pathname, searchParams } = new URL(request.url, "http://localhost");
 
   const query = {};
 
@@ -77,8 +77,6 @@ module.exports = (server) => async (request, response) => {
             params[key] = obj[key];
           });
       });
-
-      const pathname = request.url.split("#")[0].split("?")[0];
 
       router.parse(pathname);
     }
