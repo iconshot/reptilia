@@ -1,17 +1,21 @@
 const crossroads = require("crossroads");
 
+const BodyHelper = require("./helpers/BodyHelper");
+
 const Controller = require("./Controller/Controller");
 
-module.exports = (server) => (request, response) => {
+module.exports = (server) => async (request, response) => {
   const middlewares = server.getMiddlewares();
 
   if (middlewares.length === 0) {
     return;
   }
 
-  const controller = new Controller(request, response);
-
   const { headers } = request;
+
+  const body = await BodyHelper.parseBody(request);
+
+  const controller = new Controller(request, response);
 
   const cookies = controller.parseCookies();
 
@@ -44,10 +48,7 @@ module.exports = (server) => (request, response) => {
 
     // check method
 
-    if (
-      method !== null &&
-      request.method.toLowerCase() !== method.toLowerCase()
-    ) {
+    if (method !== null && method.toUpperCase() !== request.method) {
       shouldRun = false;
     }
 
@@ -92,11 +93,12 @@ module.exports = (server) => (request, response) => {
       request,
       response,
       controller,
-      context,
-      params,
       headers,
+      body,
       cookies,
       query,
+      context,
+      params,
       next,
     });
   };
