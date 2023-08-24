@@ -50,6 +50,10 @@ class BodyHelper {
           body[key] = value;
         });
 
+        bb.on("error", () => {
+          body = null;
+        });
+
         bb.on("close", () => resolve(body));
 
         request.pipe(bb);
