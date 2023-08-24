@@ -3,12 +3,11 @@ const path = require("path");
 const fsp = require("fs/promises");
 
 class File {
-  constructor(buffer, name, encoding, mimeType, size) {
+  constructor(buffer, name, encoding, mimeType) {
     this.buffer = buffer;
     this.name = name;
     this.encoding = encoding;
     this.mimeType = mimeType;
-    this.size = size;
   }
 
   getBuffer() {
@@ -28,7 +27,7 @@ class File {
   }
 
   getSize() {
-    return this.size;
+    return this.buffer.length;
   }
 
   async save(file) {
