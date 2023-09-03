@@ -7,10 +7,6 @@ const Controller = require("./Controller/Controller");
 module.exports = (server) => async (request, response) => {
   const middlewares = server.getMiddlewares();
 
-  if (middlewares.length === 0) {
-    return;
-  }
-
   const { headers } = request;
 
   const body = await BodyHelper.parseBody(request);
@@ -33,7 +29,7 @@ module.exports = (server) => async (request, response) => {
 
   const run = () => {
     if (index >= middlewares.length) {
-      response.end();
+      response.end(); // force ending
 
       return;
     }
