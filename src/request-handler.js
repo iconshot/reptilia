@@ -33,6 +33,8 @@ module.exports = (server) => async (request, response) => {
 
   const run = () => {
     if (index >= middlewares.length) {
+      response.end();
+
       return;
     }
 
