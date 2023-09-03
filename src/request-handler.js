@@ -5,7 +5,15 @@ const BodyHelper = require("./helpers/BodyHelper");
 const Controller = require("./Controller/Controller");
 
 module.exports = (server) => async (request, response) => {
+  const end = () => response.end();
+
   const middlewares = server.getMiddlewares();
+
+  if (middlewares.length === 0) {
+    end();
+
+    return;
+  }
 
   const { headers } = request;
 
@@ -29,7 +37,7 @@ module.exports = (server) => async (request, response) => {
 
   const run = () => {
     if (index >= middlewares.length) {
-      response.end(); // force ending
+      end();
 
       return;
     }
