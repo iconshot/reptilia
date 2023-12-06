@@ -66,14 +66,14 @@ class BodyHelper {
       request.on("end", () => {
         const buffer = Buffer.concat(buffers);
 
+        body = buffer;
+
         if (this.isJson(mime)) {
           try {
             const string = buffer.toString();
 
             body = JSON.parse(string);
           } catch (error) {}
-        } else {
-          body = buffer;
         }
 
         resolve(body);
