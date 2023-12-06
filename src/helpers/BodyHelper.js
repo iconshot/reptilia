@@ -18,60 +18,62 @@ class BodyHelper {
 
     const { "content-type": contentType = "text/plain" } = request.headers;
 
-    const mime = contentType.split(";")[0];
+    const mime = contentType.split(";")[0].trim();
 
-    if (this.isMultipart(mime) || this.isUrlEncoded(mime)) {
-      return new Promise((resolve) => {
-        body = {};
-
+    if (this.isFormData(mime) || this.isUrlEncoded(mime)) {
+      try {
         const bb = busboy({ headers: request.headers });
 
-        bb.on("file", (key, file, info) => {
-          const { filename, encoding, mimeType } = info;
+        return new Promise((resolve) => {
+          body = {};
 
-          const buffers = [];
+          bb.on("file", (key, file, info) => {
+            const { filename, encoding, mimeType } = info;
 
-          file.on("data", (data) => buffers.push(data));
+            const buffers = [];
 
-          file.on("close", () => {
-            const buffer = Buffer.concat(buffers);
+            file.on("data", (data) => buffers.push(data));
 
-            const file = new File(buffer, filename, encoding, mimeType);
+            file.on("close", () => {
+              const buffer = Buffer.concat(buffers);
 
-            body[key] = file;
+              const file = new File(buffer, filename, encoding, mimeType);
+
+              body[key] = file;
+            });
           });
+
+          bb.on("field", (key, value) => {
+            body[key] = value;
+          });
+
+          bb.on("error", () => {
+            body = null;
+          });
+
+          bb.on("close", () => resolve(body));
+
+          request.pipe(bb);
         });
-
-        bb.on("field", (key, value) => {
-          body[key] = value;
-        });
-
-        bb.on("error", () => {
-          body = null;
-        });
-
-        bb.on("close", () => resolve(body));
-
-        request.pipe(bb);
-      });
+      } catch (error) {}
     }
 
     return new Promise((resolve) => {
-      let string = "";
-
       const buffers = [];
 
       request.on("data", (data) => buffers.push(data));
 
       request.on("end", () => {
-        string = Buffer.concat(buffers).toString();
+        const buffer = Buffer.concat(buffers);
 
         if (this.isJson(mime)) {
           try {
+            const string = buffer.toString();
+
             body = JSON.parse(string);
           } catch (error) {}
         } else {
-          body = string;
+          body = buffer;
         }
 
         resolve(body);
@@ -79,8 +81,8 @@ class BodyHelper {
     });
   }
 
-  static isMultipart(mime) {
-    return /^multipart\/.+$/i.test(mime);
+  static isFormData(mime) {
+    return /^multipart\/form-data$/i.test(mime);
   }
 
   static isUrlEncoded(mime) {
