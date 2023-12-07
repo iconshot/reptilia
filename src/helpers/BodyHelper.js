@@ -4,27 +4,37 @@ const File = require("../File");
 
 class BodyHelper {
   static parseBody(request) {
-    let body = null;
+    return new Promise((resolve) => {
+      let body = null;
 
-    if (request.method === "GET" || request.method === "HEAD") {
-      return body;
-    }
+      const { "content-type": contentType = "text/plain" } = request.headers;
 
-    const { "content-length": contentLength = null } = request.headers;
+      const mime = contentType.split(";")[0].trim();
 
-    if (contentLength === null) {
-      return body;
-    }
+      const buffers = [];
 
-    const { "content-type": contentType = "text/plain" } = request.headers;
+      const end = () => {
+        const buffer = Buffer.concat(buffers);
 
-    const mime = contentType.split(";")[0].trim();
+        body = buffer;
 
-    if (this.isFormData(mime) || this.isUrlEncoded(mime)) {
-      try {
-        const bb = busboy({ headers: request.headers });
+        if (this.isJson(mime)) {
+          try {
+            const string = buffer.toString();
 
-        return new Promise((resolve) => {
+            body = JSON.parse(string);
+          } catch (error) {}
+        }
+
+        resolve(body);
+      };
+
+      request.on("data", (data) => buffers.push(data));
+
+      if (this.isFormData(mime) || this.isUrlEncoded(mime)) {
+        try {
+          const bb = busboy({ headers: request.headers });
+
           body = {};
 
           bb.on("file", (key, file, info) => {
@@ -47,37 +57,17 @@ class BodyHelper {
             body[key] = value;
           });
 
-          bb.on("error", () => {
-            body = null;
-          });
+          bb.on("finish", () => resolve(body));
 
-          bb.on("close", () => resolve(body));
+          bb.on("error", end);
 
           request.pipe(bb);
-        });
-      } catch (error) {}
-    }
 
-    return new Promise((resolve) => {
-      const buffers = [];
+          return;
+        } catch (error) {}
+      }
 
-      request.on("data", (data) => buffers.push(data));
-
-      request.on("end", () => {
-        const buffer = Buffer.concat(buffers);
-
-        body = buffer;
-
-        if (this.isJson(mime)) {
-          try {
-            const string = buffer.toString();
-
-            body = JSON.parse(string);
-          } catch (error) {}
-        }
-
-        resolve(body);
-      });
+      request.on("end", end);
     });
   }
 
