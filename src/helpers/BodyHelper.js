@@ -5,8 +5,6 @@ const File = require("../File");
 class BodyHelper {
   static parseBody(request) {
     return new Promise((resolve) => {
-      let body = null;
-
       const { "content-type": contentType = "text/plain" } = request.headers;
 
       const mime = contentType.split(";")[0].trim();
@@ -16,7 +14,7 @@ class BodyHelper {
       const end = () => {
         const buffer = Buffer.concat(buffers);
 
-        body = buffer;
+        let body = buffer;
 
         if (this.isJson(mime)) {
           try {
@@ -35,7 +33,7 @@ class BodyHelper {
         try {
           const bb = busboy({ headers: request.headers });
 
-          body = {};
+          const body = {};
 
           bb.on("file", (key, file, info) => {
             const { filename, encoding, mimeType } = info;
